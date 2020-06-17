@@ -15,6 +15,8 @@ from os import listdir
 from os.path import isfile, join
 import pandas as pd
 import numpy as np
+import json
+from pandas.io.json import json_normalize
 
 class loadArticles:
 
@@ -40,13 +42,14 @@ class loadArticles:
             news_data = []
             
             #loop through list loading json files
-            for i in range(0, len(json_news_files)):
+            #len(json_news_files)
+            for i in range(0, 10000):
                 #load file
                 data = json.load(open(json_news_path+'/'+json_news_files[i]))
                 if self.debug:
                     print(f"Opening File {i}/{len(json_news_files)} - {json_news_files[i]}", end='\r')
                 #normalize data for pandas data frame
-                data_normalize = pd.json_normalize(data)
+                data_normalize = json_normalize(data)
                 
                 #make data lis and append to news_data list to be combined as pandas data frame
                 news_data.append(list(data_normalize[self.column_names].iloc[0]))
