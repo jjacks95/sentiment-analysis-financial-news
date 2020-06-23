@@ -17,6 +17,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 import requests
+import yfinance as yf
 
 class loadStockInfo:
     
@@ -85,5 +86,23 @@ class loadStockInfo:
             
             return final_stock_data_df
         
+        except Exception as e:
+            print(f"Something went wrong in loadStockInfo: {e}")
+            
+            
+    #function which gets stock history given start and end date and ticker
+    def getStockHistoryDf(self, ticker, start_date, end_date):
+        try:
+            start_date = pd.to_datetime(start_date).dt.date()
+            end_date = pd.to_datetime(end_date).dt.date()
+            #add string assertion
+            tickerData = yf.Ticker(ticker)
+            #some amazing info in tickerData.info()
+            
+            #load ticker dataframe given start and end date
+            tickerDf = tickerData.history(period='1d', start=start_date, end=end_date)
+            
+            return tickerDf
+            
         except Exception as e:
             print(f"Something went wrong in loadStockInfo: {e}")

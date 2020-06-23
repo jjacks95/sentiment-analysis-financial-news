@@ -5,25 +5,28 @@
 # - It will use NLP text processing such as:
 #   - Tokenizing, stemming and lemmatization
 #   - N-grams
-#   - Bag-of-Words vectorization
-#   - TF-IDF vectorization
 #   - Sentiment Analysis
+#   - Return Binary or 3 Class Sentiment
+
+from datetime import datetime
+import os
 
 import pandas as pd
 import numpy as np
 
+#sklearn imports used
 from sklearn.utils import resample
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
-#text processing
-from sklearn.feature_extraction.text import CountVectorizer
-
+#tokenizing imports
 import nltk
 from nltk.corpus import stopwords
 import string
-
 import spacy
+
+#gensim imports for importing created model
+from gensim.models import KeyedVectors
 
 
 class textProcessing:
@@ -31,9 +34,22 @@ class textProcessing:
     def __init__(self, nlp):
         try:
             self.nlp = nlp
-            
         except Exception as e:
             print(f"Something went wrong in __init__:{e}")
+            
+            
+    #train test split function
+    def trainTestSplit(self, X, y, testSize=0.2, randomState=1):
+        try:
+            X_train, X_tesst, y_train, y_test = train_test_split(X, y, test_size=testSize, random_state=randomState)
+            
+            if self.debug:
+                print(f"Shape of X_train: {X_train.shape} - Shape of X_test: {X_test.shape}")
+                print(f"Shape of y_train: {y_train.shape} - Shape of y_test: {y_test.shape}")
+                
+            return (X_train, X_test, y_train, y_test)
+        except Exception as e:
+            print(f"Something went wrong in trainTestSplit: {e}")
             
     
     #function to be used to better tokenize and break the sentences into important words
@@ -97,31 +113,47 @@ class textProcessing:
         except Exception as e:
             print(f"Something went wrong in getEntitiesSpacy: {e}")
             
-    #define function to initizialize bagofwords
-    #and data to fit on it
-    def FitBagOfWords(self, data_to_fit, tokenizer_func):
-        try:
-            if str(tokenizer_func) is str("spacy"):
-                bagofwords = CountVectorizer(tokenizer=self.tokenizeSpacy, min_df=10, ngram_range=(1,3))
-            else:
-                bagofwords = CountVectorizer(tokenizer=self.tokenizeNLTK, min_df=10, ngram_range=(1,3))
-            
-            bagofwords.fit(data_to_fit)
-            
-            return bagofwords
-        except Exception as e:
-            print(f"Something went wrong in FitBagOfWords: {e}")
 
-    #function to transform list of data (possibly unnecessary) returns list of transformed data
-    def TransformBagOfWords(self, bag_of_words_object, list_data_to_transform):
+
+    #return countVectorized train and test df
+    def countVectorize(self, X_train, X_test, minDF=10, ngramRange=(1,3), maxFeatures=1000):
         try:
-            transformed_data_list = []
+            countVectorizer = CountVectorizer(tokenizer=self.tokenizeSpacy, min_df=minDF, ngram_range=ngramRange, max_feature=maxFeatures)
+            countVectorizer.fit(X_train)
             
-            for i in list_data_to_transform:
-                transformed_data = bag_of_words_object.transform(i)
-                transformed_data_list.append(transformed_data)
-                
-            return transformed_data_list
+            X_train_cv = countVectorizer.transform(X_train)
+            X_test_cv = countVectorizer.transform(X_test)
             
+            X_train_df = pd.DataFrame(X_train_cv.toarray(), columns=countVectorizer.get_feature_names())
+            X_test_df = pd.DataFrame(X_test_cv.toarray(), columns=countVectorizer.get_feature_names())
+            
+            if self.debug:
+                print(f"CountVectorized X_train_df Shape: {X_train_df.shape}")
+                print(f"CountVectorized X_test_df Shape: {X_test_df.shape}")
+            
+            return (X_train_df, X_test_df)
         except Exception as e:
-            print(f"Something went wrong in TransformBagOfWords: {e}")
+            print(f"Something went wrong in countVectorize: {e}")
+
+
+    #return countVectorized train and test df
+    def tfidfVectorizer(self, X_train, X_test, minDF=10, ngramRange=(1,3), maxFeatures=1000):
+        try:
+            tfidfVectorizer = TfidfVectorizer(tokenizer=self.tokenizeSpacy, min_df=minDF, ngram_range=ngramRange, max_feature=maxFeatures)
+            tfidfVectorizer.fit(X_train)
+            
+            X_train_tfidf = countVectorizer.transform(X_train)
+            X_test_tfidf = countVectorizer.transform(X_test)
+            
+            X_train_df = pd.DataFrame(X_train_tfidf.toarray(), columns=tfidfVectorizer.get_feature_names())
+            X_test_df = pd.DataFrame(X_test_tfidf.toarray(), columns=tfidfVectorizer.get_feature_names())
+            
+            if self.debug:
+                print(f"TF-IDF Vectorized X_train_df Shape: {X_train_df.shape}")
+                print(f"TF-IDF Vectorized X_test_df Shape: {X_test_df.shape}")
+            
+            return (X_train_df, X_test_df)
+        except Exception as e:
+            print(f"Something went wrong in countVectorize: {e}")
+
+
