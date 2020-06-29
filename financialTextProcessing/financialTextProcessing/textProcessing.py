@@ -31,9 +31,10 @@ from gensim.models import KeyedVectors
 
 class textProcessing:
 
-    def __init__(self, nlp):
+    def __init__(self, nlp, DEBUG=False):
         try:
             self.nlp = nlp
+            self.debug=DEBUG
         except Exception as e:
             print(f"Something went wrong in __init__:{e}")
             
@@ -41,7 +42,7 @@ class textProcessing:
     #train test split function
     def trainTestSplit(self, X, y, testSize=0.2, randomState=1):
         try:
-            X_train, X_tesst, y_train, y_test = train_test_split(X, y, test_size=testSize, random_state=randomState)
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=testSize, random_state=randomState)
             
             if self.debug:
                 print(f"Shape of X_train: {X_train.shape} - Shape of X_test: {X_test.shape}")
@@ -93,7 +94,8 @@ class textProcessing:
             listofwords = list()
             for token in doc:
                 if not token.is_stop:
-                    listofwords.append(token.lemma_.strip().lower())
+                    if token.is_alpha:
+                        listofwords.append(token.lemma_.strip().lower())
             
             return listofwords
         except Exception as e:
@@ -118,7 +120,7 @@ class textProcessing:
     #return countVectorized train and test df
     def countVectorize(self, X_train, X_test, minDF=10, ngramRange=(1,3), maxFeatures=1000):
         try:
-            countVectorizer = CountVectorizer(tokenizer=self.tokenizeSpacy, min_df=minDF, ngram_range=ngramRange, max_feature=maxFeatures)
+            countVectorizer = CountVectorizer(tokenizer=self.tokenizeSpacy, min_df=minDF, ngram_range=ngramRange, max_features=maxFeatures)
             countVectorizer.fit(X_train)
             
             X_train_cv = countVectorizer.transform(X_train)
@@ -135,11 +137,11 @@ class textProcessing:
         except Exception as e:
             print(f"Something went wrong in countVectorize: {e}")
 
-
+    
     #return countVectorized train and test df
     def tfidfVectorizer(self, X_train, X_test, minDF=10, ngramRange=(1,3), maxFeatures=1000):
         try:
-            tfidfVectorizer = TfidfVectorizer(tokenizer=self.tokenizeSpacy, min_df=minDF, ngram_range=ngramRange, max_feature=maxFeatures)
+            tfidfVectorizer = TfidfVectorizer(tokenizer=self.tokenizeSpacy, min_df=minDF, ngram_range=ngramRange, max_features=maxFeatures)
             tfidfVectorizer.fit(X_train)
             
             X_train_tfidf = countVectorizer.transform(X_train)
@@ -154,6 +156,6 @@ class textProcessing:
             
             return (X_train_df, X_test_df)
         except Exception as e:
-            print(f"Something went wrong in countVectorize: {e}")
+            print(f"Something went wrong in tfidfVectorizer: {e}")
 
 

@@ -60,3 +60,53 @@ class loadArticles:
             return news_df
         except Exception as e:
             print(f"Something went wrong in load_json: {e}")
+
+
+
+
+    #function for api requests to get news info
+    def getArticlesApi(self, token, symbol_list):
+        try:
+            #max 50 per request
+            #token_api = "udkw09gzwcqp3zffbhsrcgiqegnytwyda7hlxazy"
+            #api url f"https://stocknewsapi.com/api/v1?tickers={ticker}&items=10000&token={token_api}"
+            #loop through tickers in symbol list and request titles and sentiment for training data
+            news_by_ticker_dict = {'ticker': [], 'title': [], 'date':[]}
+            for ticker in symbol_list:
+                #number of pages
+                number_of_pages = 1
+                num = number_of_pages
+                
+                #there is the potential for multiple pages so loop through until no pages are found in api request
+                while num <= number_of_pages:
+                    # for ticker in symbol_df:
+                    stock_news_url = str("https://stocknewsapi.com/api/v1?tickers={}&items=50&token={}&date=04012020-today&page={}").format(ticker, token_api, num)
+
+                    #req url and get response
+                    req = requests.get(url=stock_news_url)
+                    response = req.json()
+                    
+                    #if error then no response go to next symbol
+                    if 'error' in response:
+                        break
+                    else:
+                        #get total number of pages from json response
+                        number_of_pages = int(response['total_pages'])
+                        
+                    if response['data'] is None:
+                        continue
+                    else:
+                        for i in response['data']:
+                            #append info to list in dict and
+                            news_by_ticker_dict['ticker'].append(ticker)
+                            news_by_ticker_dict['title'].append(i['title'])
+                            news_by_ticker_dict['date'].append(i['date'])
+                            
+                    if self.debug:
+                        print(f"{ticker} - {num}/{number_of_pages}", end='\n')
+                    num+=1
+                    
+                #return news by ticker to dict
+                return news_by_ticker_dict
+        except Exception as e:
+            print(f"Something went wrong getArticlesApi: {e}")

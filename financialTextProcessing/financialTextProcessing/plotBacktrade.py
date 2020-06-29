@@ -36,8 +36,6 @@ class Sentiment(bt.Indicator):
             self.sentiment = 0.0
         self.lines.sentiment[0] = self.sentiment
 
-
-
 class SentimentStrat(bt.Strategy):
     params = (
         ('period', 10),

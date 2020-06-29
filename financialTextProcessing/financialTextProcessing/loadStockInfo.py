@@ -30,6 +30,7 @@ class loadStockInfo:
         except Exception as e:
             print(f"Something went wrong in __init__: {e}")
 
+
     def get_symbol(self, symbol):
         url = "http://d.yimg.com/autoc.finance.yahoo.com/autoc?query={}&region=1&lang=en".format(symbol)
 
@@ -38,11 +39,12 @@ class loadStockInfo:
         for x in result['ResultSet']['Result']:
             if x['symbol'] == symbol:
                 return x['name']
-                
+ 
+ 
     def loadStockMetaDf(self):
         try:
             #load stock meta data which contains symbol full name, if nasdaq traded, or if ETF
-            stock_meta_df = pd.read_csv(self.csv_path_meta)
+            stock_meta_df = pd.read_csv(self.csv_path_meta, index_col=0)
             stock_meta_df.reset_index(drop=True, inplace=True)
             
             return stock_meta_df
@@ -106,3 +108,29 @@ class loadStockInfo:
             
         except Exception as e:
             print(f"Something went wrong in loadStockInfo: {e}")
+
+
+    #get symbols from stock data
+    def getSymbolList(self):
+        try:
+            #load stock meta data which contains symbol full name, if nasdaq traded, or if ETF
+            stock_meta_df = pd.read_csv(self.csv_path_meta, index_col=0)
+            stock_meta_df.reset_index(drop=True, inplace=True)
+            
+            #return list of stock symbols in meta df
+            return stock_meta_df['NASDAQ Symbol']
+        except Exception as e:
+            print(f"Something went wrong in getSymbols: {e}")
+
+
+    #get company list from meta data
+    def getCompanyNames(self):
+        try:
+            #load stock meta data which contains symbol full name, if nasdaq traded, or if ETF
+            stock_meta_df = pd.read_csv(self.csv_path_meta, index_col=0)
+            stock_meta_df.reset_index(drop=True, inplace=True)
+            
+            #return list of stock symbols in meta df
+            return stock_meta_df['Name']
+        except Exception as e:
+            print(f"Something went wrong in getCompanyNames: {e}")
