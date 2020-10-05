@@ -4,7 +4,7 @@
 
 
 ## Description
- - Capstone project for Data Science Diploma program at BrainStation. Worked using data science techniques to create machine learning algorithm utili􏰌ing NLP for sentiment analysis of financial news.
+ - Capstone project for Data Science Diploma program at BrainStation. Worked using data science techniques to create machine learning algorithm utilizing NLP for sentiment analysis of financial news.
 ### Tools Used
 
  - Sci-Kit Learn
